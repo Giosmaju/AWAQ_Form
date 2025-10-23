@@ -17,7 +17,7 @@ import java.time.format.DateTimeParseException
 
 /**
  * Manages the state and business logic for the form dashboard.
- * Implements local filtering with a UDF pattern and multi-select dropdowns.
+ * Implements local filtering with a UDF pattern.
  */
 class FormDashboardViewModel(
     private val apiService: ApiService
@@ -29,7 +29,8 @@ class FormDashboardViewModel(
     private val _filterState = MutableStateFlow(FilterState())
     val filterState: StateFlow<FilterState> = _filterState.asStateFlow()
 
-    // --- Options for the filter dropdowns ---
+    private var masterSubmissions: List<Submission> = emptyList()
+
     private val _availableUserIds = MutableStateFlow<List<String>>(emptyList())
     val availableUserIds: StateFlow<List<String>> = _availableUserIds.asStateFlow()
 
@@ -38,8 +39,6 @@ class FormDashboardViewModel(
 
     private val _availableCropStatuses = MutableStateFlow<List<String>>(emptyList())
     val availableCropStatuses: StateFlow<List<String>> = _availableCropStatuses.asStateFlow()
-
-    private var masterSubmissions: List<Submission> = emptyList()
 
     init {
         fetchInitialSubmissions()
@@ -69,10 +68,12 @@ class FormDashboardViewModel(
     private fun fetchInitialSubmissions() {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
+
             val tenant = SessionManager.tenant
             val apiKey = SessionManager.apiKey
-            if (tenant.isNullOrBlank() || apiKey.isNullOrBlank()) {
-                _uiState.value = UiState.Error("Not authenticated. Please log in.")
+
+            if (tenant.isNullOrBlank() || apiKey.isNullOrBlank() || SessionManager.authToken.isNullOrBlank()) {
+                _uiState.value = UiState.Error("No autenticado. Por favor, inicie sesión.")
                 return@launch
             }
 
@@ -83,31 +84,41 @@ class FormDashboardViewModel(
                 )
 
                 masterSubmissions = response.data
-                // Populate the filter options based on the fetched data
                 _availableUserIds.value = masterSubmissions.mapNotNull { it.userId?.toString() }.distinct().sorted()
                 _availableCropTypes.value = masterSubmissions.map { it.cultivo }.distinct().sorted()
                 _availableCropStatuses.value = masterSubmissions.mapNotNull { it.estadoFollaje }.distinct().sorted()
-
+                
                 clearFilters() // Set initial state
             } catch (e: Exception) {
-                _uiState.value = UiState.Error("Error fetching submissions: ${e.message}")
+                _uiState.value = UiState.Error("Error al obtener los envíos: ${e.message}")
             }
         }
     }
 
     private fun performLocalFiltering() {
         val filters = _filterState.value
-        val dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+        val dashDateFormatter = DateTimeFormatter.ISO_LOCAL_DATE // YYYY-MM-DD
+        val slashDateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
         val filteredList = masterSubmissions.filter { submission ->
-            // Logic for multi-selection dropdowns
             val userIdMatch = filters.selectedUserIds.isEmpty() || filters.selectedUserIds.contains(submission.userId?.toString())
             val cropTypeMatch = filters.selectedCropTypes.isEmpty() || filters.selectedCropTypes.contains(submission.cultivo)
             val cropStatusMatch = filters.selectedCropStatus.isEmpty() || submission.estadoFollaje?.let { filters.selectedCropStatus.contains(it) } ?: false
 
-            val submissionDate = try { LocalDate.parse(submission.fechaSiembra, dateFormatter) } catch (e: DateTimeParseException) { null }
-            val startDate = try { filters.startDate?.takeIf { it.isNotBlank() }?.let { LocalDate.parse(it, dateFormatter) } } catch (e: DateTimeParseException) { null }
-            val endDate = try { filters.endDate?.takeIf { it.isNotBlank() }?.let { LocalDate.parse(it, dateFormatter) } } catch (e: DateTimeParseException) { null }
+            // Defensively parse the submission date, trying multiple formats.
+            val submissionDate = try {
+                LocalDate.parse(submission.fechaSiembra, dashDateFormatter)
+            } catch (e: DateTimeParseException) {
+                try {
+                    LocalDate.parse(submission.fechaSiembra, slashDateFormatter)
+                } catch (e2: DateTimeParseException) {
+                    null
+                }
+            }
+
+            // Parse filter dates using the UI's format (YYYY-MM-DD)
+            val startDate = try { filters.startDate?.takeIf { it.isNotBlank() }?.let { LocalDate.parse(it, dashDateFormatter) } } catch (e: DateTimeParseException) { null }
+            val endDate = try { filters.endDate?.takeIf { it.isNotBlank() }?.let { LocalDate.parse(it, dashDateFormatter) } } catch (e: DateTimeParseException) { null }
 
             val startDateMatch = startDate == null || (submissionDate != null && (submissionDate.isAfter(startDate) || submissionDate.isEqual(startDate)))
             val endDateMatch = endDate == null || (submissionDate != null && (submissionDate.isBefore(endDate) || submissionDate.isEqual(endDate)))

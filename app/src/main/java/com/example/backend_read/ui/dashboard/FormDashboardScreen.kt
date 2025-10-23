@@ -28,7 +28,7 @@ fun FormDashboardScreen(viewModel: FormDashboardViewModel) {
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        topBar = { TopAppBar(title = { Text("Form Submissions") }) }
+        topBar = { TopAppBar(title = { Text("Envíos de Formularios") }) }
     ) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues)) {
             FilterControls(
@@ -45,7 +45,7 @@ fun FormDashboardScreen(viewModel: FormDashboardViewModel) {
                     is UiState.Loading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                     is UiState.Success -> SubmissionList(submissions = state.submissions)
                     is UiState.Error -> Text(text = state.message, modifier = Modifier.align(Alignment.Center))
-                    is UiState.Empty -> Text(text = "No submissions found.", modifier = Modifier.align(Alignment.Center))
+                    is UiState.Empty -> Text(text = "No se encontraron envíos.", modifier = Modifier.align(Alignment.Center))
                 }
             }
         }
@@ -65,14 +65,14 @@ fun FilterControls(
     Column(modifier = Modifier.padding(16.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             MultiSelectDropdown(
-                label = "User ID",
+                label = "ID de Usuario",
                 options = availableUserIds,
                 selectedOptions = filterState.selectedUserIds,
                 onSelectionChange = { onFilterChange(filterState.copy(selectedUserIds = it)) },
                 modifier = Modifier.weight(1f)
             )
             MultiSelectDropdown(
-                label = "Crop Type",
+                label = "Tipo de Cultivo",
                 options = availableCropTypes,
                 selectedOptions = filterState.selectedCropTypes,
                 onSelectionChange = { onFilterChange(filterState.copy(selectedCropTypes = it)) },
@@ -81,7 +81,7 @@ fun FilterControls(
         }
         Spacer(modifier = Modifier.height(8.dp))
         MultiSelectDropdown(
-            label = "Crop Status",
+            label = "Estado del Cultivo",
             options = availableCropStatuses,
             selectedOptions = filterState.selectedCropStatus,
             onSelectionChange = { onFilterChange(filterState.copy(selectedCropStatus = it)) }
@@ -91,23 +91,23 @@ fun FilterControls(
             OutlinedTextField(
                 value = filterState.startDate ?: "",
                 onValueChange = { onFilterChange(filterState.copy(startDate = it)) },
-                label = { Text("Start Date (YYYY-MM-DD)") },
+                label = { Text("Fecha de Inicio (YYYY-MM-DD)") },
                 modifier = Modifier.weight(1f)
             )
             OutlinedTextField(
                 value = filterState.endDate ?: "",
                 onValueChange = { onFilterChange(filterState.copy(endDate = it)) },
-                label = { Text("End Date (YYYY-MM-DD)") },
+                label = { Text("Fecha de Fin (YYYY-MM-DD)") },
                 modifier = Modifier.weight(1f)
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(onClick = onApply, modifier = Modifier.weight(1f)) {
-                Text("Apply Filters")
+                Text("Aplicar Filtros")
             }
             Button(onClick = onClear, modifier = Modifier.weight(1f)) {
-                Text("Clear")
+                Text("Limpiar")
             }
         }
     }
@@ -130,9 +130,9 @@ fun MultiSelectDropdown(
         modifier = modifier
     ) {
         OutlinedTextField(
-            modifier = Modifier.menuAnchor(), // This is important
+            modifier = Modifier.menuAnchor(),
             readOnly = true,
-            value = if (selectedOptions.isEmpty()) "All" else selectedOptions.joinToString(),
+            value = if (selectedOptions.isEmpty()) "Todos" else selectedOptions.joinToString(),
             onValueChange = {},
             label = { Text(label) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) }
@@ -155,7 +155,7 @@ fun MultiSelectDropdown(
                     leadingIcon = {
                         Checkbox(
                             checked = selectedOptions.contains(option),
-                            onCheckedChange = null // Handled by parent onClick
+                            onCheckedChange = null
                         )
                     }
                 )
@@ -185,14 +185,14 @@ fun SubmissionItem(submission: Submission) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
-            .clickable { expanded = !expanded }, // Make the whole card clickable
+            .clickable { expanded = !expanded },
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column {
             if (!submission.imageUrl.isNullOrBlank()) {
                 AsyncImage(
                     model = submission.imageUrl,
-                    contentDescription = "Submission Photo for ${submission.cultivo}",
+                    contentDescription = "Foto de envío para ${submission.cultivo}",
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp),
@@ -203,37 +203,37 @@ fun SubmissionItem(submission: Submission) {
             Column(
                 modifier = Modifier
                     .padding(16.dp)
-                    .animateContentSize() // Animate size changes
+                    .animateContentSize()
             ) {
                 Text(text = submission.cultivo, style = MaterialTheme.typography.titleLarge)
-                Text(text = "Sown on: ${submission.fechaSiembra}", style = MaterialTheme.typography.bodySmall)
-                Text(text = "User ID: ${submission.userId ?: "N/A"}", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
+                Text(text = "Sembrado el: ${submission.fechaSiembra}", style = MaterialTheme.typography.bodySmall)
+                Text(text = "ID de Usuario: ${submission.userId ?: "N/A"}", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
 
                 if (expanded) {
                     Spacer(modifier = Modifier.height(16.dp))
                     HorizontalDivider()
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    DetailRow(label = "Phenological State:", value = submission.estadoFenologico)
-                    DetailRow(label = "Foliage Density:", value = submission.densidadFollaje)
-                    DetailRow(label = "Foliage Color:", value = submission.colorFollaje)
-                    DetailRow(label = "Foliage State:", value = submission.estadoFollaje)
+                    DetailRow(label = "Estado Fenológico:", value = submission.estadoFenologico)
+                    DetailRow(label = "Densidad del Follaje:", value = submission.densidadFollaje)
+                    DetailRow(label = "Color del Follaje:", value = submission.colorFollaje)
+                    DetailRow(label = "Estado del Follaje:", value = submission.estadoFollaje)
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    submission.humedad?.let { DetailRow(label = "Humidity:", value = "$it%" + (submission.metodoHumedad?.let { " ($it)" } ?: "")) }
+                    submission.humedad?.let { DetailRow(label = "Humedad:", value = "$it%" + (submission.metodoHumedad?.let { " ($it)" } ?: "")) }
                     submission.ph?.let { DetailRow(label = "pH:", value = "$it" + (submission.metodoPh?.let { " ($it)" } ?: "")) }
-                    submission.alturaPlanta?.let { DetailRow(label = "Plant Height:", value = "${it}cm" + (submission.metodoAltura?.let { " ($it)" } ?: "")) }
+                    submission.alturaPlanta?.let { DetailRow(label = "Altura de Planta:", value = "${it}cm" + (submission.metodoAltura?.let { " ($it)" } ?: "")) }
 
                     Spacer(modifier = Modifier.height(8.dp))
 
                     submission.observaciones?.let {
-                        Text(text = "Observations:", style = MaterialTheme.typography.titleMedium)
+                        Text(text = "Observaciones:", style = MaterialTheme.typography.titleMedium)
                         Text(text = it, style = MaterialTheme.typography.bodyMedium)
                         Spacer(modifier = Modifier.height(8.dp))
                     }
 
-                    DetailRow(label = "Location:", value = submission.localizacion)
+                    DetailRow(label = "Ubicación:", value = submission.localizacion)
                 }
             }
         }
