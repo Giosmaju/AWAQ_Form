@@ -63,6 +63,7 @@ fun FilterControls(
     onClear: () -> Unit
 ) {
     Column(modifier = Modifier.padding(16.dp)) {
+        // Puts all dropdowns in one row for a better tablet layout
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             MultiSelectDropdown(
                 label = "ID de Usuario",
@@ -78,14 +79,14 @@ fun FilterControls(
                 onSelectionChange = { onFilterChange(filterState.copy(selectedCropTypes = it)) },
                 modifier = Modifier.weight(1f)
             )
+            MultiSelectDropdown(
+                label = "Estado del Cultivo",
+                options = availableCropStatuses,
+                selectedOptions = filterState.selectedCropStatus,
+                onSelectionChange = { onFilterChange(filterState.copy(selectedCropStatus = it)) },
+                modifier = Modifier.weight(1f)
+            )
         }
-        Spacer(modifier = Modifier.height(8.dp))
-        MultiSelectDropdown(
-            label = "Estado del Cultivo",
-            options = availableCropStatuses,
-            selectedOptions = filterState.selectedCropStatus,
-            onSelectionChange = { onFilterChange(filterState.copy(selectedCropStatus = it)) }
-        )
         Spacer(modifier = Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedTextField(
