@@ -58,14 +58,14 @@ data class Submission(
 
 /**
  * Represents the current state of the UI filters.
- * The fields are strings to directly represent the text field states.
+ * Uses lists to support multi-selection dropdowns.
  */
 data class FilterState(
-    val selectedUserId: String? = null,
+    val selectedUserIds: List<String> = emptyList(),
     val startDate: String? = null,
     val endDate: String? = null,
-    val cropType: String? = null,
-    val cropStatus: String? = null
+    val selectedCropTypes: List<String> = emptyList(),
+    val selectedCropStatus: List<String> = emptyList()
 )
 
 /**
