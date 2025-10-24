@@ -9,9 +9,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-/**
- * Represents the state of the Login UI.
- */
 sealed class LoginState {
     data object Idle : LoginState()
     data object Loading : LoginState()
@@ -19,9 +16,6 @@ sealed class LoginState {
     data class Error(val message: String) : LoginState()
 }
 
-/**
- * Manages the state and business logic for the Login screen.
- */
 class LoginViewModel(private val apiService: ApiService) : ViewModel() {
 
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)

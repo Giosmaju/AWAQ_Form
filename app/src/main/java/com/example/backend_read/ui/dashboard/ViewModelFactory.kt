@@ -5,9 +5,6 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.backend_read.data.remote.ApiClient
 import com.example.backend_read.ui.login.LoginViewModel
 
-/**
- * A simple ViewModel factory that provides the ApiService dependency.
- */
 class ViewModelFactory : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         val apiService = ApiClient.instance

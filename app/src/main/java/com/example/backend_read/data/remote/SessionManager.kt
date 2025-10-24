@@ -1,9 +1,5 @@
 package com.example.backend_read.data.remote
 
-/**
- * A simple in-memory session manager to hold authentication credentials.
- * In a production app, this should be replaced with secure, persistent storage.
- */
 object SessionManager {
     var tenant: String? = null
     var authToken: String? = null
