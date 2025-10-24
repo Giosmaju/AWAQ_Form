@@ -12,10 +12,10 @@ import androidx.compose.ui.unit.dp
 fun LoginScreen(viewModel: LoginViewModel, onLoginSuccess: () -> Unit) {
     val loginState by viewModel.loginState.collectAsState()
 
-    var tenant by remember { mutableStateOf("agromo") } // Default for convenience
+    var tenant by remember { mutableStateOf("agromo") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var apiKey by remember { mutableStateOf("") } // API key is now a user input
+    var apiKey by remember { mutableStateOf("") }
 
     LaunchedEffect(loginState) {
         if (loginState is LoginState.Success) {

@@ -52,7 +52,6 @@ object ApiClient {
         }
     }
 
-    // WARNING: Insecure trust manager for development only. Trusts all certificates.
     private val trustAllCerts = arrayOf<TrustManager>(
         object : X509TrustManager {
             override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) = Unit
@@ -67,7 +66,6 @@ object ApiClient {
 
     private val sslSocketFactory = sslContext.socketFactory
 
-    // Create a logging interceptor for debugging.
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
     }
@@ -76,12 +74,11 @@ object ApiClient {
         .dns(customDns)
         .sslSocketFactory(sslSocketFactory, trustAllCerts[0] as X509TrustManager)
         .hostnameVerifier { _, _ -> true }
-        .addInterceptor(loggingInterceptor) // Add the logger here
+        .addInterceptor(loggingInterceptor)
         .addInterceptor { chain ->
             val original = chain.request()
             val requestBuilder = original.newBuilder()
 
-            // Add the Authorization token to every authenticated request.
             SessionManager.authToken?.let { token ->
                 requestBuilder.addHeader("Authorization", "Bearer $token")
             }

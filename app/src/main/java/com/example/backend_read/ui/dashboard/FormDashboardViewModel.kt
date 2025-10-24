@@ -41,7 +41,7 @@ class FormDashboardViewModel(
         fetchInitialSubmissions()
     }
 
-    // --- Event Handlers for UI --- //
+    //Event Handlers for UI
 
     fun onFilterChange(newFilterState: FilterState) {
         _filterState.value = newFilterState
@@ -60,7 +60,7 @@ class FormDashboardViewModel(
         }
     }
 
-    // --- Private Logic --- //
+    //Private Logic
 
     private fun fetchInitialSubmissions() {
         viewModelScope.launch {
@@ -85,7 +85,7 @@ class FormDashboardViewModel(
                 _availableCropTypes.value = masterSubmissions.map { it.cultivo }.distinct().sorted()
                 _availableCropStatuses.value = masterSubmissions.mapNotNull { it.estadoFollaje }.distinct().sorted()
                 
-                clearFilters() // Set initial state
+                clearFilters()
             } catch (e: Exception) {
                 _uiState.value = UiState.Error("Error al obtener los envíos: ${e.message}")
             }
@@ -113,7 +113,6 @@ class FormDashboardViewModel(
                 }
             }
 
-            // Parse filter dates using the UI's format (YYYY-MM-DD)
             val startDate = try { filters.startDate?.takeIf { it.isNotBlank() }?.let { LocalDate.parse(it, dashDateFormatter) } } catch (e: DateTimeParseException) { null }
             val endDate = try { filters.endDate?.takeIf { it.isNotBlank() }?.let { LocalDate.parse(it, dashDateFormatter) } } catch (e: DateTimeParseException) { null }
 

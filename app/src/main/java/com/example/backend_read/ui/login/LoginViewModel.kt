@@ -34,7 +34,6 @@ class LoginViewModel(private val apiService: ApiService) : ViewModel() {
                 val request = LoginRequest(email = email, password = password)
                 val response = apiService.login(apiKey, tenant, request)
 
-                // Start a session with all required credentials
                 SessionManager.startSession(
                     tenant = response.user.tenant,
                     token = response.token,
